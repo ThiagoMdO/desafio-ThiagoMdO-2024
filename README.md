@@ -1,17 +1,14 @@
 # RECINTOS DO ZOO
 
-## COMO BAIXAR O CÓDIGO E SUBMETER MINHA SOLUÇÃO?
-Para completar a etapa do desafio você terá que baixar a estrutura do código aqui na Azure, resolver o desafio usando Javascript e entregá-lo no repositório no seu github.
+<h1 align="center" style="text-align: center; background-color: #000; border-radius: 10px">  
+    <img src = "https://github.com/user-attachments/assets/0e317d85-52fe-42fe-80aa-f3d9ab4897d6" style="margin-top: 10px; height: 300px; width: 300px ">
+    <p style="text-shadow : 1px 1px 10px orange">Desafio de Código DB</p>
+</h1>
 
-### BAIXANDO A ESTRUTURA
-Para baixar a estrutura no formato zip, basta clicar neste [link](https://dev.azure.com/db-tecnologia/99dbf7ce-dadd-40d3-b827-e1648cb6a262/_apis/git/repositories/877e7dfb-78ea-465e-bd88-9dbf83120933/items?path=/&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=main&resolveLfs=true&%24format=zip&api-version=5.0&download=true).
+> ### Foi proposto um desafio de Código pela DB Server, onde a aplicação é responsavel por analisar e mostrar quais recintos estão disponivels para novos animais que entram no zoologico.
 
-### ENTREGANDO O DESAFIO
-Após resolver o desafio e validá-lo com os testes (mais detalhes nos tópicos abaixo), você terá que criar um repositório **público** no [Github](https://github.com/) com o **nome** de `desafio-seuUsername-2024` (substitua "seuUsername" pelo seu usuário do GitHub) e colocar o código na **branch** `main`.
 
-Se você ainda não teve contato com essa ferramenta, não tem problema. Separamos um material para lhe ajudar nessa etapa: [Como usar Git e Github na prática](https://www.youtube.com/watch?v=UBAX-13g8OM).
-
-## O DESAFIO
+## 01 - DESCRIÇÃO DO DESAFIO
 Olá! Você foi contratado para ajudar na organização de um zoológico.
 Sua missão será construir a lógica para indicar os recintos onde novos animais se sintam confortáveis.
 
@@ -86,12 +83,26 @@ Saída
   erro: "Animal inválido"
 }
 ```
+### 🗂️Hierarquida das pastas
 
-### O CÓDIGO
-Você está recebendo uma estrutura básica para desenvolver a lógica do desafio. O arquivo principal está localizado dentro da pasta `src` e se chama `recintos-zoo.js`. Você pode desenvolver a sua lógica criando outros arquivos, métodos e até mesmo outras classes, porém o resultado deve poder ser obtido através do método `analisaRecintos`.
+```bash
+  target
+    └── data
+        ├── Ambiente.js
+        └── Aninal.js
+        src
+        └── desafios
+            ├── aplication
+            │   └── desafio.js
+            ├── recintos-zoo.js
+            └── recintos-zoo.test.js
+```
 
-> **ALERTA**:
-> É importante que essa estrutura básica não seja alterada, pois as etapas automáticas da nossa validação dependem disso. Conseguir executar os passos descritos mais adiante na seção `VALIDANDO A SOLUÇÃO` também ajudará você a verificar que seu código segue a estrutura definida.
+## 🔨 Tools 
+<div display="inline">
+    <img align="center" alt="Java" height="30" width="40" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" />
+
+## 02 - Configuações
 
 Exemplo de chamada
 ```js
@@ -100,36 +111,31 @@ Exemplo de chamada
 
 ### INSTALANDO E RODANDO NA SUA MÁQUINA
 1. Instalar o [Node](https://nodejs.org/en/)
-2. Instalar dependencias do projeto com o seguinte comando:
+2. Instalar dependencias do projeto com o seguinte comando, na raiz do projeto:
 ```bash
 npm install
 ```
+3. No aquivo src/application/desafio.js, possue um exemplo. Pode ser alterado e rodado com o código:
+``` bash
+npm start
+```
+
+
+## 03 - Metodologia de testes
 
 ### VALIDANDO A SOLUÇÃO
-Junto com a estrutura básica você está recebendo alguns cenários de testes no arquivo `recintos-zoo.test.js` para auxiliar na validação da sua solução. Recomendamos que você crie mais casos de teste para aumentar a confiabilidade da sua solução.
+Junto com a estrutura básica você está recebendo alguns cenários de testes no arquivo `recintos-zoo.test.js` para auxiliar na validação da sua solução. Foi criado mais casos de testes parar cobrir mais cenários, já que são apenas teste com banco de dados mokado, tive que fazer teste com apenas o cenário estático do banco. 
 Para testar sua solução com os cenários existentes ou novos, rode o seguinte comando:
 ```bash
 npm test
 ```
 
-Para saber mais consulte a [Documentação do Jest](https://jestjs.io/pt-BR/docs/getting-started).
+## Author 🧑🏼‍🎨
 
-### VALIDANDO A ENTREGA
-Para garantir que seu desafio vai ser considerado entregue, revise os seguintes pontos:
+- [@ThiagoMdO](https://github.com/ThiagoMdO)
+## Feedback
 
-#### GIT
-O repositório deve ser **público** e ter o **nome** e **branch** indicados na seção `ENTREGANDO O DESAFIO`.
+Se você tiver algum feedback, por favor me contate por email: oliveirathiagomendes@gmail.com
 
-Para verificar que o repositório é público, deslogue-se do github e tente ver o código. Se conseguir, nós também conseguimos! Lembrando que vamos usar o link para o usuário informado durante o cadastro na Gupy. Veja [como alterar a visibilidade](https://docs.github.com/pt/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility#changing-a-repositorys-visibility).
 
-#### CÓDIGO
-A solução deve ser entregue em **javascript** e a **estrutura de pastas e arquivos** deve seguir o indicado na seção `O CÓDIGO`.
-
-O **export** da classe deve ser mantido da seguinte maneira para compatibilidade com o arquivo de testes:
-```js
-export { RecintosZoo as RecintosZoo };
-```
-
-Se todos os passos forem seguidos corretamente, você terá um repositório como o da figura abaixo (lembrando que é permitido criar mais arquivos), onde `seuUsername` é o seu usuário do GitHub, que você informou no questionário da Gupy.
-
-![Exemplo de repositório](https://startdbstorage.blob.core.windows.net/filecontainer/imagem-estrutura.png)
+Mais informações no meu [Site de Portfolio](https://thiagomdo.github.io/Site_Portfolio/)
