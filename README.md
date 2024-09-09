@@ -5,7 +5,7 @@
     <p style="text-shadow : 1px 1px 10px orange">Desafio de Código DB</p>
 </h1>
 
-> ### Foi proposto um desafio de Código pela DB Server, onde a aplicação é responsavel por analisar e mostrar quais recintos estão disponivels para novos animais que entram no zoologico.
+> ### Foi proposto um desafio de Código pela DB Server, onde a aplicação é responsável por analisar e mostrar quais recintos estão disponíveis para novos animais que entram no zoológico.
 
 
 ## 01 - DESCRIÇÃO DO DESAFIO
