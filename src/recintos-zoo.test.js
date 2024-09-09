@@ -37,5 +37,49 @@ describe('Recintos do Zoologico', () => {
         expect(resultado.recintosViaveis.length).toBe(3);
     });
 
+    test('Deve permitir colocar um macaco em apenas recintos não vazios, com bioma compatível', () => {
+        const resultado = new RecintosZoo().analisaRecintos('MACACO', 1);
+        expect(resultado.erro).toBeFalsy();
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 1 (espaço livre: 6 total: 10)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 3 (espaço livre: 3 total: 7)');
+        expect(resultado.recintosViaveis.length).toBe(2);
+    });
+
+    test('Deve permitir animais carnivoros apenas em lugares vazios ou da mesma espécie, com bioma campatível', () => {
+        const resultado = new RecintosZoo().analisaRecintos('LEAO', 1);
+        expect(resultado.erro).toBeFalsy();
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 2 (espaço livre: 2 total: 5)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 5 (espaço livre: 3 total: 9)');
+        expect(resultado.recintosViaveis.length).toBe(2);
+    });
+
+    test('Deve permitir a inclusão de animais herbivoros (não territoriais) no mesmo recinto, com bioma compatível, e não permir colocar onde existam carnívoros', () => {
+        const resultado = new RecintosZoo().analisaRecintos('GAZELA', 1);
+        expect(resultado.erro).toBeFalsy();
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 1 (espaço livre: 4 total: 10)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 2 (espaço livre: 3 total: 5)');
+        expect(resultado.recintosViaveis[2]).toBe('Recinto 3 (espaço livre: 3 total: 7)');
+        expect(resultado.recintosViaveis.length).toBe(3);
+    });
+
+    test('Deve permitir a inclusão de animais herbivoro territorial, apenas em recinto vazio compatível, ou da mesma especie ou em bioma onde toleram outras especies', () => {
+        const resultado = new RecintosZoo().analisaRecintos('HIPOPOTAMO', 1);
+        expect(resultado.erro).toBeFalsy();
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 2 (espaço livre: 1 total: 5)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 3 (espaço livre: 0 total: 7)');
+        expect(resultado.recintosViaveis[2]).toBe('Recinto 4 (espaço livre: 4 total: 8)');
+        expect(resultado.recintosViaveis.length).toBe(3);
+    });
+
+    test('Deve reservar um espaço entra, caso tenha mais de uma especie num recinto', () => {
+        const resultado = new RecintosZoo().analisaRecintos('GAZELA', 2);
+        expect(resultado.erro).toBeFalsy();
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 1 (espaço livre: 2 total: 10)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 2 (espaço livre: 1 total: 5)');
+        expect(resultado.recintosViaveis[2]).toBe('Recinto 3 (espaço livre: 1 total: 7)');
+        expect(resultado.recintosViaveis.length).toBe(3);
+    });
+
+
 });
 

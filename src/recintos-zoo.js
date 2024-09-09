@@ -6,15 +6,15 @@ class RecintosZoo {
     analisaRecintos(animal, quantidade) {
 
         const aninalNaoExiste = this.checkAnimalExiste(animal);
-        if (aninalNaoExiste) return aninalNaoExiste;
+        if (aninalNaoExiste) return {erro: aninalNaoExiste};
 
         const quantidadeInvalida = this.checkQuantidade(quantidade);
-        if (quantidadeInvalida) return quantidadeInvalida;
+        if (quantidadeInvalida) return {erro: quantidadeInvalida};
 
-        const recintoCheio = this.checkRecintoCheio(animal, quantidade);
-        if (recintoCheio) return recintoCheio;
+        const recintoCheio = this.checkRecintoSituacao(animal, quantidade);
+        if (recintoCheio) return { erro: null, recintosViaveis: recintoCheio };
 
-        return { erro: null, recintosViaveis: recintoCheio };
+        return { erro: "Não há recinto viável", recintosViaveis: recintoCheio };
     }
 
     checkAnimalExiste(animal) {
@@ -26,7 +26,7 @@ class RecintosZoo {
         if (quantidade < 1) return "Quantidade inválida";
     }
 
-    checkRecintoCheio(animal, quantidade) {
+    checkRecintoSituacao(animal, quantidade) {
         const listaAmbientes = Object.values(Ambiente);
         const listaAnimais = Object.values(Animal);
 
@@ -39,7 +39,8 @@ class RecintosZoo {
             quantidade,
             espacoDoAnimalTotal,
             espacosDisponiveis);
-            
+
+        if (espacosDisponiveis.length === 0) return false;
         return espacosDisponiveis;
     }
 
@@ -123,6 +124,8 @@ class RecintosZoo {
     ) {
         for (const habitantes of ambiente.habitantes) {
             const [nome, quantidade] = habitantes.split(',');
+
+            if (ambiente.habitantes.length > 0 && animalRequest.nome !== nome) lugarExtra = true;
 
             for (const animalPesquisa of listaAnimais) {
 
@@ -248,6 +251,15 @@ class RecintosZoo {
                                                                 espacosDisponiveis
         );
 
+        this.checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalRequest, 
+            animalTerritorial,
+            animalRepository,
+            ambiente,
+            areaUtil,
+            espacoDoAnimalTotal, 
+            espacosDisponiveis
+        );
+
         this.checkSemAnimalTerritorial(animalRequest, 
             animalTerritorial, 
             animalRepository, 
@@ -272,8 +284,7 @@ class RecintosZoo {
         }
     }
 
-    checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(
-        animalRequest, 
+    checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalRequest, 
         animalTerritorial,
         animalRepository,
         ambiente,
@@ -284,6 +295,24 @@ class RecintosZoo {
         const biomaNecessario = ["savana", "rio"];
         if (animalRequest !== animalTerritorial
             && animalRepository === animalTerritorial
+            && biomaNecessario.every(bioma => ambiente.bioma.includes(bioma))
+        ) {
+            this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+        }
+    }
+
+    checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(
+        animalRequest, 
+        animalTerritorial,
+        animalRepository,
+        ambiente,
+        areaUtil,
+        espacoDoAnimalTotal, 
+        espacosDisponiveis
+    ) {
+        const biomaNecessario = ["savana", "rio"];
+        if (animalRequest === animalTerritorial
+            && animalRepository !== animalTerritorial
             && biomaNecessario.every(bioma => ambiente.bioma.includes(bioma))
         ) {
             this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
