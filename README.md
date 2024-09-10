@@ -102,7 +102,7 @@ Saída
 <div display="inline">
     <img align="center" alt="Java" height="30" width="40" src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" />
 
-## 02 - Configuações
+## 02 - Configurações
 
 Exemplo de chamada
 ```js

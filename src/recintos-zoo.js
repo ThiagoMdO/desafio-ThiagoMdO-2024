@@ -1,6 +1,8 @@
 import Animal from "../data/Animal.js";
 import Ambiente from "../data/Ambiente.js";
 
+import AnimalToCheckCompativelDTO from "./dto/AnimalToCheckCompativelDTO.js";
+
 class RecintosZoo {
 
     analisaRecintos(animal, quantidade) {
@@ -11,10 +13,10 @@ class RecintosZoo {
         const quantidadeInvalida = this.checkQuantidade(quantidade);
         if (quantidadeInvalida) return {erro: quantidadeInvalida};
 
-        const recintoCheio = this.checkRecintoSituacao(animal, quantidade);
-        if (recintoCheio) return { erro: null, recintosViaveis: recintoCheio };
+        const achouLugar = this.checkRecintoSituacao(animal, quantidade);
+        if (achouLugar) return { erro: null, recintosViaveis: achouLugar };
 
-        return { erro: "Não há recinto viável", recintosViaveis: recintoCheio };
+        return { erro: "Não há recinto viável", recintosViaveis: achouLugar };
     }
 
     checkAnimalExiste(animal) {
@@ -44,7 +46,8 @@ class RecintosZoo {
         return espacosDisponiveis;
     }
 
-    checkAmbientes(listaAmbientes,
+    checkAmbientes(
+        listaAmbientes,
         listaAnimais,
         animalRequest,
         quantidade,
@@ -53,19 +56,16 @@ class RecintosZoo {
     ) {
         for (const ambiente of listaAmbientes) {
             let tamanhoAnimaisJaNoAmbiente = 0;
-
-            //jogar dentro da função com area util para faciliar o calculo com animais que Ja tem no repository e do que
-            // ta chegando se não for da mesma especie reservar um espaço a mais (caso duas especies no mesmo recindo diminuir uma vaga no recinto)
             let lugarExtra = false;
 
-            if (this.checkComRecintoVazio(ambiente,
-                                    animalRequest,
-                                    quantidade,
-                                    tamanhoAnimaisJaNoAmbiente,
-                                    lugarExtra,
-                                    espacoDoAnimalTotal,
-                                    espacosDisponiveis
-            )) continue;
+            this.adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente,
+                animalRequest,
+                quantidade,
+                tamanhoAnimaisJaNoAmbiente,
+                lugarExtra,
+                espacoDoAnimalTotal,
+                espacosDisponiveis
+            );
             
             if (ambiente.habitantes.length > 1) lugarExtra = true;
 
@@ -85,7 +85,7 @@ class RecintosZoo {
         }
     }
 
-    checkComRecintoVazio(ambiente,
+    adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente,
         animalRequest,
         quantidade,
         tamanhoAnimaisJaNoAmbiente,
@@ -95,11 +95,7 @@ class RecintosZoo {
     ) {
         if (ambiente.habitantes.length === 0) {
 
-            if (this.animalComMenosDaQuantidadeMinimaEmRecinto(animalRequest,
-                                                                "macaco", 
-                                                                quantidade, 
-                                                                2)
-                )
+            if (this.animalComMenosDaQuantidadeMinimaEmRecinto(animalRequest, "macaco", quantidade, 2))
                 return true;
             
             if (animalRequest.bioma.some(bioma => ambiente.bioma.includes(bioma))) {
@@ -112,7 +108,6 @@ class RecintosZoo {
     animalComMenosDaQuantidadeMinimaEmRecinto(animalRequest, nomeAnimal, quantidade, quantidadeMinima) {
         if (animalRequest.nome === nomeAnimal && quantidade < quantidadeMinima) return true;
     }
-
 
     checkAnimaisEmCadaAmbiente(ambiente,
         listaAnimais,
@@ -129,217 +124,139 @@ class RecintosZoo {
 
             for (const animalPesquisa of listaAnimais) {
 
-               this.checkAnimaisCompativeis(animalPesquisa,
-                                        nome,
-                                        tamanhoAnimaisJaNoAmbiente,
-                                        quantidade,
-                                        animalRequest,
-                                        ambiente,
-                                        lugarExtra,
-                                        espacoDoAnimalTotal,
-                                        espacosDisponiveis
-                );
+               this.checkAnimaisCompativeis( new AnimalToCheckCompativelDTO(animalPesquisa,
+                    nome,
+                    tamanhoAnimaisJaNoAmbiente,
+                    quantidade,
+                    animalRequest,
+                    ambiente,
+                    lugarExtra,
+                    espacoDoAnimalTotal,
+                    espacosDisponiveis
+                ));
             }
         }
     }
-    checkAnimaisCompativeis(animalRepository,
-                            nomeAnimal,
-                            tamanhoAnimaisJaNoAmbiente,
-                            quantidade,
-                            animalRequest,
-                            ambiente,
-                            lugarExtra,
-                            espacoDoAnimalTotal,
-                            espacosDisponiveis
-    ) {
-        if (animalRepository.nome === nomeAnimal) {
-            tamanhoAnimaisJaNoAmbiente += animalRepository.tamanho * quantidade;
-            this.filtroAnimalCarnivoro(animalRepository,
-                                    "carnivoro",
-                                    animalRequest,
-                                    nomeAnimal,
-                                    ambiente,
-                                    tamanhoAnimaisJaNoAmbiente,
-                                    lugarExtra,
-                                    espacoDoAnimalTotal,
-                                    espacosDisponiveis
-            ) ;
+    checkAnimaisCompativeis(animalToCheckCompativelDTO) {
+        if (animalToCheckCompativelDTO.animalRepository.nome === animalToCheckCompativelDTO.nomeAnimal) {
+            animalToCheckCompativelDTO.tamanhoAnimaisJaNoAmbiente 
+            += animalToCheckCompativelDTO.animalRepository.tamanho 
+            * animalToCheckCompativelDTO.quantidade;
 
-            this.filtroAnimalNaoCarnivoro(animalRepository,
-                                    "carnivoro",
-                                    animalRequest,
-                                    ambiente,
-                                    tamanhoAnimaisJaNoAmbiente,
-                                    lugarExtra,
-                                    espacoDoAnimalTotal,
-                                    espacosDisponiveis,
-                                    ambiente
-            );
+            this.filtroAnimalCarnivoro(animalToCheckCompativelDTO) ;
+
+            this.filtroAnimalNaoCarnivoro(animalToCheckCompativelDTO);
         }
     }
 
-    filtroAnimalCarnivoro(animalRepository,
-        tipoCarnivoro,
-        animalRequest,
-        nomeAnimal,
-        ambiente,
-        tamanhoAnimaisJaNoAmbiente,
-        lugarExtra,
-        espacoDoAnimalTotal,
-        espacosDisponiveis
-    ) {
-        if (animalRepository.alimentacao === tipoCarnivoro 
-            && animalRequest.nome === nomeAnimal) {
-            if (animalRequest.bioma.some(bioma => ambiente.bioma.includes(bioma))) {
-                const areaUtil = ambiente.tamanhoTotal - tamanhoAnimaisJaNoAmbiente - ((lugarExtra)?1:0);
-                this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+    filtroAnimalCarnivoro(animalToCheckCompativelDTO) {
+        if (animalToCheckCompativelDTO.animalRepository.alimentacao === "carnivoro" 
+            && animalToCheckCompativelDTO.animalRequest.nome === animalToCheckCompativelDTO.nomeAnimal) {
+            if (animalToCheckCompativelDTO.animalRequest.bioma
+                .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))) {
+
+                const areaUtil = animalToCheckCompativelDTO.ambiente.tamanhoTotal 
+                - animalToCheckCompativelDTO.tamanhoAnimaisJaNoAmbiente 
+                - ((animalToCheckCompativelDTO.lugarExtra)?1:0);
+
+                this.adicionarRecinto(
+                    areaUtil, 
+                    animalToCheckCompativelDTO.espacoDoAnimalTotal, 
+                    animalToCheckCompativelDTO.espacosDisponiveis, 
+                    animalToCheckCompativelDTO.ambiente
+                )
             }
         }
     }
 
-    filtroAnimalNaoCarnivoro(animalRepository,
-                            tipoCarnivoro,
-                            animalRequest,
-                            ambiente,
-                            tamanhoAnimaisJaNoAmbiente,
-                            lugarExtra,
-                            espacoDoAnimalTotal,
-                            espacosDisponiveis
+    filtroAnimalNaoCarnivoro(animalToCheckCompativelDTO) {
+        if (animalToCheckCompativelDTO.animalRepository.alimentacao !== "carnivoro"
+            && animalToCheckCompativelDTO.animalRequest.alimentacao !== "carnivoro") {
+            if (animalToCheckCompativelDTO.animalRequest.bioma
+                .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))) 
+            {
+                const areaUtil = animalToCheckCompativelDTO.ambiente.tamanhoTotal 
+                - animalToCheckCompativelDTO.tamanhoAnimaisJaNoAmbiente 
+                - ((animalToCheckCompativelDTO.lugarExtra)?1:0);
 
-    ) {
-        if (animalRepository.alimentacao !== tipoCarnivoro
-            && animalRequest.alimentacao !== tipoCarnivoro) {
-            if (animalRequest.bioma.some(bioma => ambiente.bioma.includes(bioma))) {
-            const areaUtil = ambiente.tamanhoTotal - tamanhoAnimaisJaNoAmbiente - ((lugarExtra)?1:0);
+                animalToCheckCompativelDTO.setAnimalTerritorial("hipopotamo");
+                animalToCheckCompativelDTO.setAreaUtil(areaUtil);
 
-            // verificar futuramente lista de animais territoriais
-            this.checkSituacaoAnimalTerritorial(animalRequest.nome, 
-                                            "hipopotamo", 
-                                            animalRepository.nome, 
-                                            areaUtil,
-                                            espacoDoAnimalTotal,
-                                            espacosDisponiveis,
-                                            ambiente);
+                this.checkSituacaoAnimalTerritorial(animalToCheckCompativelDTO);
             }
         }
     }
 
-    checkSituacaoAnimalTerritorial(animalRequest, 
-                                animalTerritorial, 
-                                animalRepository, 
-                                areaUtil,
-                                espacoDoAnimalTotal,
-                                espacosDisponiveis,
-                                ambiente
-    ) {
+    checkSituacaoAnimalTerritorial(animalToCheckCompativelDTO) {
 
-        this.checkAnimalTerritorialEntraEspacoMesmaEspecie(animalRequest, 
-                                                        animalTerritorial,
-                                                        animalRepository,
-                                                        areaUtil,
-                                                        espacoDoAnimalTotal, 
-                                                        espacosDisponiveis,
-                                                        ambiente
-        )
+        this.checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO)
 
-        this.checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(animalRequest, 
-                                                                animalTerritorial,
-                                                                animalRepository,
-                                                                ambiente,
-                                                                areaUtil,
-                                                                espacoDoAnimalTotal, 
-                                                                espacosDisponiveis
-        );
+        this.checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(animalToCheckCompativelDTO);
 
-        this.checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalRequest, 
-            animalTerritorial,
-            animalRepository,
-            ambiente,
-            areaUtil,
-            espacoDoAnimalTotal, 
-            espacosDisponiveis
-        );
+        this.checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalToCheckCompativelDTO);
 
-        this.checkSemAnimalTerritorial(animalRequest, 
-            animalTerritorial, 
-            animalRepository, 
-            areaUtil, 
-            espacoDoAnimalTotal, 
-            espacosDisponiveis, 
-            ambiente
-        );
+        this.checkSemAnimalTerritorial(animalToCheckCompativelDTO);
     }
 
-    checkAnimalTerritorialEntraEspacoMesmaEspecie(animalRequest, 
-        animalTerritorial,
-        animalRepository,
-        areaUtil,
-        espacoDoAnimalTotal, 
-        espacosDisponiveis,
-        ambiente
-    ) {
-        if (animalRequest ===  animalTerritorial 
-            && animalRepository ===  animalTerritorial){
-                this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+    checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO) {
+        if (animalToCheckCompativelDTO.animalRequest ===  animalToCheckCompativelDTO.animalTerritorial 
+            && animalToCheckCompativelDTO.animalRepository ===  animalToCheckCompativelDTO.animalTerritorial){
+                this.adicionarRecinto(
+                    animalToCheckCompativelDTO.areaUtil, 
+                    animalToCheckCompativelDTO.espacoDoAnimalTotal, 
+                    animalToCheckCompativelDTO.espacosDisponiveis, 
+                    animalToCheckCompativelDTO.ambiente
+                )
         }
     }
 
-    checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalRequest, 
-        animalTerritorial,
-        animalRepository,
-        ambiente,
-        areaUtil,
-        espacoDoAnimalTotal, 
-        espacosDisponiveis
-    ) {
+    checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalToCheckCompativelDTO) {
         const biomaNecessario = ["savana", "rio"];
-        if (animalRequest !== animalTerritorial
-            && animalRepository === animalTerritorial
-            && biomaNecessario.every(bioma => ambiente.bioma.includes(bioma))
+        if (animalToCheckCompativelDTO.animalRequest !== animalToCheckCompativelDTO.animalTerritorial
+            && animalToCheckCompativelDTO.animalRepository === animalToCheckCompativelDTO.animalTerritorial
+            && biomaNecessario.every(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))
         ) {
-            this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+            this.adicionarRecinto(
+                animalToCheckCompativelDTO.areaUtil, 
+                animalToCheckCompativelDTO.espacoDoAnimalTotal, 
+                animalToCheckCompativelDTO.espacosDisponiveis, 
+                animalToCheckCompativelDTO.ambiente
+            )
         }
     }
 
-    checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(
-        animalRequest, 
-        animalTerritorial,
-        animalRepository,
-        ambiente,
-        areaUtil,
-        espacoDoAnimalTotal, 
-        espacosDisponiveis
-    ) {
+    checkAnimalTerritorialEntraEspacoAnimalNaoTerritorial(animalToCheckCompativelDTO) {
         const biomaNecessario = ["savana", "rio"];
-        if (animalRequest === animalTerritorial
-            && animalRepository !== animalTerritorial
-            && biomaNecessario.every(bioma => ambiente.bioma.includes(bioma))
+        if (animalToCheckCompativelDTO.animalRequest.nome === animalToCheckCompativelDTO.animalTerritorial
+            && animalToCheckCompativelDTO.animalRepository.nome !== animalToCheckCompativelDTO.animalTerritorial
+            && biomaNecessario.every(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))
         ) {
-            this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+            this.adicionarRecinto(
+                animalToCheckCompativelDTO.areaUtil, 
+                animalToCheckCompativelDTO.espacoDoAnimalTotal, 
+                animalToCheckCompativelDTO.espacosDisponiveis, 
+                animalToCheckCompativelDTO.ambiente
+            )
         }
     }
 
-    checkSemAnimalTerritorial(animalRequest, 
-                            animalTerritorial, 
-                            animalRepository, 
-                            areaUtil, 
-                            espacoDoAnimalTotal, 
-                            espacosDisponiveis, 
-                            ambiente
-    ) {
-        if (animalRequest !== animalTerritorial 
-            && animalRepository !== animalTerritorial) {
-            this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)    
+    checkSemAnimalTerritorial(animalToCheckCompativelDTO) {
+        if (animalToCheckCompativelDTO.animalRequest.nome !== animalToCheckCompativelDTO.animalTerritorial 
+            && animalToCheckCompativelDTO.animalRepository.nome !== animalToCheckCompativelDTO.animalTerritorial) {
+            this.adicionarRecinto(
+                animalToCheckCompativelDTO.areaUtil, 
+                animalToCheckCompativelDTO.espacoDoAnimalTotal, 
+                animalToCheckCompativelDTO.espacosDisponiveis, 
+                animalToCheckCompativelDTO.ambiente
+            )    
         }
     }
 
     adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente) {
-        if (areaUtil >= espacoDoAnimalTotal ) {
-            espacosDisponiveis.push(`Recinto ${ambiente.recinto} `
-                +`(espaço livre: ${areaUtil - espacoDoAnimalTotal} total: ${ambiente.tamanhoTotal})`)
-        } else {
-            return "Não há recinto viável";
-        }
+        if (areaUtil < espacoDoAnimalTotal ) return "Não há recinto viável";
+        
+        espacosDisponiveis.push(`Recinto ${ambiente.recinto} `
+            +`(espaço livre: ${areaUtil - espacoDoAnimalTotal} total: ${ambiente.tamanhoTotal})`)
     }
 }
 

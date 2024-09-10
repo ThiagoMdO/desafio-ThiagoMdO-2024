@@ -3,7 +3,7 @@ const Ambiente = Object.freeze({
     area2:  { recinto: 2, tamanhoTotal: 5, bioma:["savana"], habitantes: [] },
     area3:  { recinto: 3, tamanhoTotal: 7, bioma:["savana", "rio"], habitantes: ["gazela,1"] },
     area4:  { recinto: 4, tamanhoTotal: 8, bioma:["rio"], habitantes: [] },
-    area5:  { recinto: 5, tamanhoTotal: 9, bioma:["savana"], habitantes: ["leão,1"] },
+    area5:  { recinto: 5, tamanhoTotal: 9, bioma:["savana"], habitantes: ["leão,1"] }
 });
 
 export default Ambiente;
