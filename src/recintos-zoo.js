@@ -57,7 +57,7 @@ class RecintosZoo {
             ambienteToCheckDTO.setTamanhoAnimaisJaNoAmbiente(tamanhoAnimaisJaNoAmbiente);
             ambienteToCheckDTO.setLugarExtra(lugarExtra);
 
-            this.adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente, ambienteToCheckDTO);
+            this.adicionaAnimalSeRecintoVazioECompativel(ambiente, ambienteToCheckDTO);
             
             if (ambiente.habitantes.length > 1) lugarExtra = true;
 
@@ -65,7 +65,7 @@ class RecintosZoo {
         }
     }
 
-    adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente, ambienteToCheckDTO) {
+    adicionaAnimalSeRecintoVazioECompativel(ambiente, ambienteToCheckDTO) {
         if (ambiente.habitantes.length === 0) {
 
             if (this.animalComMenosDaQuantidadeMinimaEmRecinto(
@@ -172,6 +172,8 @@ class RecintosZoo {
     }
 
     checkSituacaoAnimalTerritorial(animalToCheckCompativelDTO) {
+        
+        this.checkSemAnimalTerritorial(animalToCheckCompativelDTO);
 
         this.checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO)
 
@@ -179,12 +181,12 @@ class RecintosZoo {
 
         this.checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalToCheckCompativelDTO);
 
-        this.checkSemAnimalTerritorial(animalToCheckCompativelDTO);
+        
     }
 
     checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO) {
-        if (animalToCheckCompativelDTO.animalRequest ===  animalToCheckCompativelDTO.animalTerritorial 
-            && animalToCheckCompativelDTO.animalRepository ===  animalToCheckCompativelDTO.animalTerritorial){
+        if (animalToCheckCompativelDTO.animalRequest.nome ===  animalToCheckCompativelDTO.animalTerritorial 
+            && animalToCheckCompativelDTO.animalRepository.nome ===  animalToCheckCompativelDTO.animalTerritorial){
                 this.adicionarRecinto(
                     animalToCheckCompativelDTO.areaUtil, 
                     animalToCheckCompativelDTO.espacoDoAnimalTotal, 
@@ -196,8 +198,8 @@ class RecintosZoo {
 
     checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalToCheckCompativelDTO) {
         const biomaNecessario = ["savana", "rio"];
-        if (animalToCheckCompativelDTO.animalRequest !== animalToCheckCompativelDTO.animalTerritorial
-            && animalToCheckCompativelDTO.animalRepository === animalToCheckCompativelDTO.animalTerritorial
+        if (animalToCheckCompativelDTO.animalRequest.nome !== animalToCheckCompativelDTO.animalTerritorial
+            && animalToCheckCompativelDTO.animalRepository.nome === animalToCheckCompativelDTO.animalTerritorial
             && biomaNecessario.every(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))
         ) {
             this.adicionarRecinto(

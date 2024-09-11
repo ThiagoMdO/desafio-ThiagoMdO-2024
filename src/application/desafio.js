@@ -2,4 +2,4 @@ import { RecintosZoo } from '../recintos-zoo.js';
 
 const recinto = new RecintosZoo();
 
-console.log(recinto.analisaRecintos("HIPOPOTAMO", 1));
+console.log(recinto.analisaRecintos("GAZELA", 1));
