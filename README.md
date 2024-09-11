@@ -94,6 +94,9 @@ Saída
         └── desafios
             ├── aplication
             │   └── desafio.js
+            ├── dto
+            │   ├── AmbienteToCheckDTO.js
+            │   └── AnimalToCheckCompativelDTO.js
             ├── recintos-zoo.js
             └── recintos-zoo.test.js
 ```

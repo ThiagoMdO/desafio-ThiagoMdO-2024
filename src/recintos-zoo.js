@@ -2,6 +2,7 @@ import Animal from "../data/Animal.js";
 import Ambiente from "../data/Ambiente.js";
 
 import AnimalToCheckCompativelDTO from "./dto/AnimalToCheckCompativelDTO.js";
+import AmbienteToCheckDTO from "./dto/AmbienteToCheckDTO.js";
 
 class RecintosZoo {
 
@@ -35,72 +36,57 @@ class RecintosZoo {
         const espacoDoAnimalTotal =  Animal[animal].tamanho * quantidade;
         let espacosDisponiveis = [];
 
-        this.checkAmbientes(listaAmbientes,
+        this.checkAmbientes( new AmbienteToCheckDTO(
+            listaAmbientes,
             listaAnimais,
             Animal[animal],
             quantidade,
             espacoDoAnimalTotal,
-            espacosDisponiveis);
+            espacosDisponiveis)
+        );
 
         if (espacosDisponiveis.length === 0) return false;
         return espacosDisponiveis;
     }
 
-    checkAmbientes(
-        listaAmbientes,
-        listaAnimais,
-        animalRequest,
-        quantidade,
-        espacoDoAnimalTotal,
-        espacosDisponiveis
-    ) {
-        for (const ambiente of listaAmbientes) {
+    checkAmbientes(ambienteToCheckDTO) {
+        for (const ambiente of ambienteToCheckDTO.listaAmbientes) {
             let tamanhoAnimaisJaNoAmbiente = 0;
             let lugarExtra = false;
 
-            this.adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente,
-                animalRequest,
-                quantidade,
-                tamanhoAnimaisJaNoAmbiente,
-                lugarExtra,
-                espacoDoAnimalTotal,
-                espacosDisponiveis
-            );
+            ambienteToCheckDTO.setTamanhoAnimaisJaNoAmbiente(tamanhoAnimaisJaNoAmbiente);
+            ambienteToCheckDTO.setLugarExtra(lugarExtra);
+
+            this.adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente, ambienteToCheckDTO);
             
             if (ambiente.habitantes.length > 1) lugarExtra = true;
 
-            //bolar um jeito de se já tiver mais de uma especie no recinto, (chave, valor) sobrescrever posição atualizada
-            // talvez colocar uma variavel pra ter esses dois valores ja atualizado, fora do looping e sobrescreve a informação na variavel 
-            // : variavel = nova info, no looping
-            // colocar logica fora do ambiente para interar a quantidade de animais primeiro?
-            
-            this.checkAnimaisEmCadaAmbiente(ambiente,
-                listaAnimais,
-                tamanhoAnimaisJaNoAmbiente,
-                animalRequest,
-                lugarExtra,
-                espacoDoAnimalTotal,
-                espacosDisponiveis
-            )
+            this.checkAnimaisEmCadaAmbiente(ambiente, ambienteToCheckDTO);
         }
     }
 
-    adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente,
-        animalRequest,
-        quantidade,
-        tamanhoAnimaisJaNoAmbiente,
-        lugarExtra,
-        espacoDoAnimalTotal,
-        espacosDisponiveis
-    ) {
+    adicionaAnimalNaoSolitarioSeNaoTiverSozinho(ambiente, ambienteToCheckDTO) {
         if (ambiente.habitantes.length === 0) {
 
-            if (this.animalComMenosDaQuantidadeMinimaEmRecinto(animalRequest, "macaco", quantidade, 2))
-                return true;
+            if (this.animalComMenosDaQuantidadeMinimaEmRecinto(
+                ambienteToCheckDTO.animalRequest, 
+                "macaco", 
+                ambienteToCheckDTO.quantidade, 
+                2))
+                return;
             
-            if (animalRequest.bioma.some(bioma => ambiente.bioma.includes(bioma))) {
-                const areaUtil = ambiente.tamanhoTotal - tamanhoAnimaisJaNoAmbiente - ((lugarExtra)?1:0);
-                this.adicionarRecinto(areaUtil, espacoDoAnimalTotal, espacosDisponiveis, ambiente)
+            let ambienteCompativel = ambienteToCheckDTO.animalRequest.bioma
+            .some(bioma => ambiente.bioma.includes(bioma));
+
+            if (ambienteCompativel) {
+                const areaUtil = ambiente.tamanhoTotal 
+                - ambienteToCheckDTO.tamanhoAnimaisJaNoAmbiente 
+                - ((ambienteToCheckDTO.lugarExtra)?1:0);
+                this.adicionarRecinto(
+                    areaUtil, 
+                    ambienteToCheckDTO.espacoDoAnimalTotal, 
+                    ambienteToCheckDTO.espacosDisponiveis, 
+                    ambiente)
             }
         }
     }
@@ -109,30 +95,24 @@ class RecintosZoo {
         if (animalRequest.nome === nomeAnimal && quantidade < quantidadeMinima) return true;
     }
 
-    checkAnimaisEmCadaAmbiente(ambiente,
-        listaAnimais,
-        tamanhoAnimaisJaNoAmbiente,
-        animalRequest,
-        lugarExtra,
-        espacoDoAnimalTotal,
-        espacosDisponiveis
-    ) {
+    checkAnimaisEmCadaAmbiente(ambiente, ambienteToCheckDTO) {
         for (const habitantes of ambiente.habitantes) {
             const [nome, quantidade] = habitantes.split(',');
 
-            if (ambiente.habitantes.length > 0 && animalRequest.nome !== nome) lugarExtra = true;
+            if (ambiente.habitantes.length > 0 && ambienteToCheckDTO.animalRequest.nome !== nome) 
+                ambienteToCheckDTO.lugarExtra = true;
 
-            for (const animalPesquisa of listaAnimais) {
+            for (const animalPesquisa of ambienteToCheckDTO.listaAnimais) {
 
                this.checkAnimaisCompativeis( new AnimalToCheckCompativelDTO(animalPesquisa,
                     nome,
-                    tamanhoAnimaisJaNoAmbiente,
+                    ambienteToCheckDTO.tamanhoAnimaisJaNoAmbiente,
                     quantidade,
-                    animalRequest,
+                    ambienteToCheckDTO.animalRequest,
                     ambiente,
-                    lugarExtra,
-                    espacoDoAnimalTotal,
-                    espacosDisponiveis
+                    ambienteToCheckDTO.lugarExtra,
+                    ambienteToCheckDTO.espacoDoAnimalTotal,
+                    ambienteToCheckDTO.espacosDisponiveis
                 ));
             }
         }
@@ -152,9 +132,11 @@ class RecintosZoo {
     filtroAnimalCarnivoro(animalToCheckCompativelDTO) {
         if (animalToCheckCompativelDTO.animalRepository.alimentacao === "carnivoro" 
             && animalToCheckCompativelDTO.animalRequest.nome === animalToCheckCompativelDTO.nomeAnimal) {
-            if (animalToCheckCompativelDTO.animalRequest.bioma
-                .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))) {
+            
+            let ambienteCompativel = animalToCheckCompativelDTO.animalRequest.bioma
+            .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma));
 
+            if (ambienteCompativel) {
                 const areaUtil = animalToCheckCompativelDTO.ambiente.tamanhoTotal 
                 - animalToCheckCompativelDTO.tamanhoAnimaisJaNoAmbiente 
                 - ((animalToCheckCompativelDTO.lugarExtra)?1:0);
@@ -172,9 +154,11 @@ class RecintosZoo {
     filtroAnimalNaoCarnivoro(animalToCheckCompativelDTO) {
         if (animalToCheckCompativelDTO.animalRepository.alimentacao !== "carnivoro"
             && animalToCheckCompativelDTO.animalRequest.alimentacao !== "carnivoro") {
-            if (animalToCheckCompativelDTO.animalRequest.bioma
-                .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma))) 
-            {
+
+            let ambienteCompativel = animalToCheckCompativelDTO.animalRequest.bioma
+            .some(bioma => animalToCheckCompativelDTO.ambiente.bioma.includes(bioma));
+
+            if (ambienteCompativel) {
                 const areaUtil = animalToCheckCompativelDTO.ambiente.tamanhoTotal 
                 - animalToCheckCompativelDTO.tamanhoAnimaisJaNoAmbiente 
                 - ((animalToCheckCompativelDTO.lugarExtra)?1:0);
