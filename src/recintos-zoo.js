@@ -23,10 +23,12 @@ class RecintosZoo {
     checkAnimalExiste(animal) {
         const animaisValidos = Object.keys(Animal);
         if (!animaisValidos.includes(animal)) return "Animal inválido";
+        return false;
     }
 
     checkQuantidade(quantidade) {
         if (quantidade < 1) return "Quantidade inválida";
+        return false;
     }
 
     checkRecintoSituacao(animal, quantidade) {
@@ -172,7 +174,6 @@ class RecintosZoo {
     }
 
     checkSituacaoAnimalTerritorial(animalToCheckCompativelDTO) {
-        
         this.checkSemAnimalTerritorial(animalToCheckCompativelDTO);
 
         this.checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO)
