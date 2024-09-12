@@ -182,7 +182,6 @@ class RecintosZoo {
 
         this.checkAnimalNaoTerritorialEntraEspacoDeAnimalTerritorial(animalToCheckCompativelDTO);
 
-        
     }
 
     checkAnimalTerritorialEntraEspacoMesmaEspecie(animalToCheckCompativelDTO) {

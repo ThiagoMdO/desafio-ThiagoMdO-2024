@@ -33,9 +33,10 @@ describe('Recintos do Zoologico', () => {
     });
 
     test('Não deve permitir, mesmo que com espaço suficiente no recinto 3, preencher espaço total tendo mais de uma especie no recinto, por lugar extra', () => {
-        const resultado = new RecintosZoo().analisaRecintos('MACACO', 7);
+        const resultado = new RecintosZoo().analisaRecintos('MACACO', 5);
         expect(resultado.erro).toBeFalsy();
-        expect(resultado.recintosViaveis[0]).toBe('Recinto 1 (espaço livre: 0 total: 10)');
+        expect(resultado.recintosViaveis[0]).toBe('Recinto 1 (espaço livre: 2 total: 10)');
+        expect(resultado.recintosViaveis[1]).toBe('Recinto 2 (espaço livre: 0 total: 5)');
     });
 
     test('Deve encontrar recinto para 1 crocodilo', () => {
